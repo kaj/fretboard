@@ -52,14 +52,17 @@ fn main() {
     let mut strings = &guitar;
     for arg in args().skip(1) {
         match arg.as_str() {
-            "mandolin" => { strings = &mandolin; }
-            "guitar" => { strings = &guitar; }
+            "mandolin" => {
+                strings = &mandolin;
+            }
+            "guitar" => {
+                strings = &guitar;
+            }
             key_s => {
                 let key = match key_s.parse::<Key>() {
                     Ok(key) => key,
                     Err(e) => {
-                        eprintln!("Exepected instrument or chord, got {:?}: {}",
-                                  key_s, e);
+                        eprintln!("Exepected instrument or chord, got {:?}: {}", key_s, e);
                         exit(1);
                     }
                 };
