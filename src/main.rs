@@ -2,6 +2,7 @@ mod tone;
 
 use std::env::args;
 use std::process::exit;
+use std::ptr;
 use tone::{Key, Tone};
 
 fn main() {
@@ -68,7 +69,9 @@ fn main() {
                     print!(
                         "<tr><th>{}</th>",
                         match fret {
-                            3|5|7|10 => '·',
+                            3 | 5 | 7 => '·',
+                            9 if ptr::eq(strings, &guitar) => '·',
+                            10 if ptr::eq(strings, &mandolin) => '·',
                             12 => ':',
                             _ => ' ',
                         }
