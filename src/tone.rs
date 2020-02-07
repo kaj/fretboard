@@ -42,16 +42,37 @@ impl FromStr for Tone {
 impl Add<u8> for &Tone {
     type Output = Tone;
     fn add(self, i: u8) -> Tone {
-        let value = self.value + i;
-        let value = if value >= 12 { value - 12 } else { value };
-        Tone { value }
+        Tone {
+            value: (self.value + i) % 12,
+        }
     }
 }
 
-pub enum Key {
-    Min(Tone),
-    Maj(Tone),
-    // TODO: Add Maj7, Min7, Dim, etc
+pub struct Key {
+    root: Tone,
+    form: KeyForm,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+enum KeyForm {
+    Min,
+    Min7,
+    Maj,
+    Maj7,
+    // TODO: Dim, Dim7,
+}
+
+impl KeyForm {
+    fn harmonic(self, interval: u8) -> Option<u8> {
+        match interval {
+            0 => Some(1),
+            3 if self == Self::Min || self == Self::Min7 => Some(3),
+            4 if self == Self::Maj || self == Self::Maj7 => Some(3),
+            7 => Some(5),
+            10 if self == Self::Min7 || self == Self::Maj7 => Some(7),
+            _ => None,
+        }
+    }
 }
 
 impl Key {
@@ -59,31 +80,32 @@ impl Key {
     // Note: The returned numbers are traditional, 1 actually means 0,
     // 3 is 4 for major or 3 for minor, and 5 is 7.
     pub fn harmonic(&self, t: Tone) -> Option<u8> {
-        let (root, third) = match self {
-            Key::Min(root) => (root.value, 3),
-            Key::Maj(root) => (root.value, 4),
-        };
+        let root = self.root.value;
         let interval = if t.value >= root {
             t.value - root
         } else {
             12 + t.value - root
         };
-        match interval {
-            0 => Some(1),
-            n if n == third => Some(3),
-            7 => Some(5),
-            _ => None,
-        }
+        self.form.harmonic(interval)
     }
 }
 
 impl FromStr for Key {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Key, Self::Err> {
-        if s.ends_with("m") {
-            Ok(Key::Min(s[0..s.len() - 1].parse()?))
-        } else {
-            Ok(Key::Maj(s.parse()?))
+        for (end, form) in &[
+            ("m", KeyForm::Min),
+            ("m7", KeyForm::Min7),
+            ("7", KeyForm::Maj7),
+            ("", KeyForm::Maj),
+        ] {
+            if s.ends_with(end) {
+                return Ok(Key {
+                    root: s[0..s.len() - end.len()].parse()?,
+                    form: *form,
+                });
+            }
         }
+        unreachable!("Anything ends with the empty string")
     }
 }
