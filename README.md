@@ -15,7 +15,7 @@ Fretboard is written in Rust.  To build, first
 Then you can build and run fretboard by checking out this project and
 executing:
 
-    cargo run -- C F#m G > frets.html
+    cargo run -- C F#m G7 A#dim7 > frets.html
 
 To see the results, open `frets.html` in a web browser.
 

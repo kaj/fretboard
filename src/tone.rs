@@ -59,16 +59,19 @@ enum KeyForm {
     Min7,
     Maj,
     Maj7,
-    // TODO: Dim, Dim7,
+    Dim,
+    Dim7,
 }
 
 impl KeyForm {
     fn harmonic(self, interval: u8) -> Option<u8> {
         match interval {
             0 => Some(1),
-            3 if self == Self::Min || self == Self::Min7 => Some(3),
+            3 if self != Self::Maj && self != Self::Maj7 => Some(3),
             4 if self == Self::Maj || self == Self::Maj7 => Some(3),
-            7 => Some(5),
+            6 if self == Self::Dim || self == Self::Dim7 => Some(5),
+            7 if self != Self::Dim && self != Self::Dim7 => Some(5),
+            9 if self == Self::Dim7 => Some(7),
             10 if self == Self::Min7 || self == Self::Maj7 => Some(7),
             _ => None,
         }
@@ -94,6 +97,8 @@ impl FromStr for Key {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Key, Self::Err> {
         for (end, form) in &[
+            ("dim7", KeyForm::Dim7),
+            ("dim", KeyForm::Dim),
             ("m", KeyForm::Min),
             ("m7", KeyForm::Min7),
             ("7", KeyForm::Maj7),
